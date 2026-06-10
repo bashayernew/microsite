@@ -45,7 +45,32 @@ export interface Tenant {
   orderTypes: OrderType[];
   /** Admin-managed hero offers / featured banners (rotating carousel). */
   offers?: Offer[];
+  /**
+   * Brand colors the merchant picks in the POS microsite-settings page.
+   * The site injects these into its CSS variables at runtime, so the whole
+   * storefront re-themes from this one object. POS: Tenant.theme
+   */
+  theme: Theme;
+  /**
+   * Order of the page blocks on the storefront home, controlled by the merchant
+   * in the dashboard. Unknown keys are ignored; missing keys simply don't render.
+   * POS: Tenant.sectionOrder
+   */
+  sectionOrder: SectionKey[];
 }
+
+/** Brand colors for one store. All values are CSS colors (hex is fine). */
+export interface Theme {
+  /** Primary brand color. Maps to CSS --saffron. */
+  primary: string;
+  /** Darker shade for hovers/active. Maps to CSS --saffron-deep. */
+  primaryDeep: string;
+  /** Optional secondary accent. Maps to CSS --olive. Falls back to primary. */
+  accent?: string;
+}
+
+/** A reorderable page block on the storefront home. */
+export type SectionKey = "hero" | "offers" | "menu";
 
 /** A promotional / featured banner shown in the hero carousel. POS: future "Offers". */
 export interface Offer {

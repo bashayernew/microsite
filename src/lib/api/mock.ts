@@ -65,6 +65,10 @@ export const MOCK_TENANT: Tenant = {
     { id: "br_kuwaitcity", name: "Kuwait City", nameAr: "مدينة الكويت", area: "Al Soor St", areaAr: "شارع السور" },
     { id: "br_jabriya", name: "Jabriya", nameAr: "الجابرية", area: "Block 1B", areaAr: "قطعة ١ب" },
   ],
+  // Brand colors — stands in for what the merchant picks in the POS dashboard.
+  theme: { primary: "#3b5bdb", primaryDeep: "#2f49b0", accent: "#0ca678" },
+  // Page-block order on the storefront home.
+  sectionOrder: ["hero", "offers", "menu"],
 };
 
 export const MOCK_MENU: Menu = {

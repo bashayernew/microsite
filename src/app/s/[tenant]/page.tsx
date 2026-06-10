@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { getMenu, getTenant } from "@/lib/api/client";
 import { StoreProvider } from "@/components/store-provider";
@@ -30,9 +31,20 @@ export default async function StorePage({ params }: PageProps) {
   const [tenant, menu] = await Promise.all([getTenant(slug), getMenu(slug)]);
   if (!tenant) notFound();
 
+  // Per-store theming: override the global CSS color variables on a wrapper so
+  // every component below recolors from this store's `theme` object. The merchant
+  // sets these colors in the POS microsite-settings page.
+  const themeVars = {
+    "--saffron": tenant.theme.primary,
+    "--saffron-deep": tenant.theme.primaryDeep,
+    "--olive": tenant.theme.accent ?? tenant.theme.primary,
+  } as CSSProperties;
+
   return (
-    <StoreProvider tenant={tenant}>
-      <StoreView menu={menu} />
-    </StoreProvider>
+    <div style={themeVars}>
+      <StoreProvider tenant={tenant}>
+        <StoreView menu={menu} />
+      </StoreProvider>
+    </div>
   );
 }

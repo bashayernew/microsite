@@ -171,9 +171,17 @@ export function StoreView({
         </main>
       ) : (
         /* ── Home ───────────────────────────────────────────────────────── */
-        <>
-          <Hero />
-
+        (() => {
+          // Page blocks rendered in the merchant-controlled order (tenant.sectionOrder).
+          const heroBlock = <Hero key="hero" />;
+          const offersBlock =
+            tenant.offers && tenant.offers.length > 0 ? (
+              <div key="offers" className="mx-auto max-w-6xl px-4 pt-4">
+                <OffersCarousel offers={tenant.offers} locale={locale} />
+              </div>
+            ) : null;
+          const menuBlock = (
+            <div key="menu">
           <div className="sticky top-[61px] z-30 border-b border-line bg-paper/85 backdrop-blur">
             <div className="mx-auto max-w-6xl px-4">
               <div className="flex items-center gap-3 py-3">
@@ -255,7 +263,19 @@ export function StoreView({
               })
             )}
           </main>
-        </>
+            </div>
+          );
+          return (
+            <>
+              {tenant.sectionOrder.map((key) => {
+                if (key === "hero") return heroBlock;
+                if (key === "offers") return offersBlock;
+                if (key === "menu") return menuBlock;
+                return null;
+              })}
+            </>
+          );
+        })()
       )}
 
       <footer className="border-t border-line py-8 text-center">
