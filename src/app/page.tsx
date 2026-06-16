@@ -24,7 +24,7 @@ export default function Home() {
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/s/noor"
+            href="/noor"
             className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-paper transition hover:bg-saffron"
           >
             View a live demo store

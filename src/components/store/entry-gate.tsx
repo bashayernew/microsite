@@ -25,12 +25,12 @@ export function EntryGate() {
   useEffect(() => {
     let alive = true;
     if (isDineIn && step === "table") {
-      getTables(store.branch.id).then((a) => alive && setAreas(a));
+      getTables(store.tenant.slug, store.branch.id).then((a) => alive && setAreas(a));
     }
     return () => {
       alive = false;
     };
-  }, [isDineIn, step, store.branch.id]);
+  }, [isDineIn, step, store.tenant.slug, store.branch.id]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
