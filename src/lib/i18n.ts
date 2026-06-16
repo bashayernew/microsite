@@ -84,11 +84,6 @@ const en: Dict = {
   total: "Total",
   continue: "Continue",
   select_required: "Please choose a required option",
-  hours_title: "Opening hours",
-  contact_title: "Get in touch",
-  gallery_title: "A glimpse inside",
-  view_on_map: "View on map",
-  get_directions: "Get directions",
 };
 
 const ar: Dict = {
@@ -153,11 +148,6 @@ const ar: Dict = {
   total: "الإجمالي",
   continue: "متابعة",
   select_required: "الرجاء اختيار خيار إلزامي",
-  hours_title: "ساعات العمل",
-  contact_title: "تواصل معنا",
-  gallery_title: "لمحة من الداخل",
-  view_on_map: "عرض على الخريطة",
-  get_directions: "الاتجاهات",
 };
 
 const DICTS: Record<Locale, Dict> = { en, ar };

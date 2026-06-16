@@ -16,9 +16,8 @@ export function ProductSheet({
   product: Product | null;
   onClose: () => void;
 }) {
-  const { locale, addLine, tenant } = useStore();
+  const { locale, addLine } = useStore();
   const t = makeT(locale);
-  const canOrder = tenant.allowCart !== false;
 
   const [variantId, setVariantId] = useState<string>("");
   const [selected, setSelected] = useState<Record<string, string[]>>({});
@@ -248,19 +247,17 @@ export function ProductSheet({
             </div>
           </div>
 
-          {/* Footer — hidden in browse-only mode (no cart). */}
-          {canOrder && (
-            <div className="flex items-center gap-3 border-t border-line bg-paper-raised px-5 py-4">
-              <QtyStepper value={qty} onChange={setQty} locale={locale} />
-              <button
-                onClick={handleAdd}
-                className="flex flex-1 items-center justify-between rounded-full bg-ink px-5 py-3.5 text-sm font-semibold text-paper transition hover:bg-saffron disabled:cursor-not-allowed"
-              >
-                <span>{t("add_to_order")}</span>
-                <Money amount={lineTotal} locale={locale} />
-              </button>
-            </div>
-          )}
+          {/* Footer */}
+          <div className="flex items-center gap-3 border-t border-line bg-paper-raised px-5 py-4">
+            <QtyStepper value={qty} onChange={setQty} locale={locale} />
+            <button
+              onClick={handleAdd}
+              className="flex flex-1 items-center justify-between rounded-full bg-ink px-5 py-3.5 text-sm font-semibold text-paper transition hover:bg-saffron disabled:cursor-not-allowed"
+            >
+              <span>{t("add_to_order")}</span>
+              <Money amount={lineTotal} locale={locale} />
+            </button>
+          </div>
         </>
       )}
     </Sheet>

@@ -37,24 +37,14 @@ export interface Tenant {
   rating: number;
   ratingCount: number;
   priceLevel: 1 | 2 | 3;
+  hours: string;
+  hoursAr: string;
   isOpenNow: boolean;
   branches: Branch[];
   /** Which order types this store accepts. POS: Tenant.orderTypeConfig */
   orderTypes: OrderType[];
   /** Admin-managed hero offers / featured banners (rotating carousel). */
   offers?: Offer[];
-  /** Hero carousel — multiple slides, each an image + content + one CTA. */
-  hero: HeroSection;
-  /** Opening hours & location section. */
-  hours: HoursSection;
-  /** Contact section (address / phone / WhatsApp / directions). */
-  contact: ContactSection;
-  /** "A glimpse inside" photo gallery. */
-  gallery: GallerySection;
-  /** Call-to-action banner. */
-  cta: CtaSection;
-  /** Rich footer (about / browse / visit-us / social). */
-  footer: SiteFooter;
   /**
    * Brand colors the merchant picks in the POS microsite-settings page.
    * The site injects these into its CSS variables at runtime, so the whole
@@ -67,172 +57,20 @@ export interface Tenant {
    * POS: Tenant.sectionOrder
    */
   sectionOrder: SectionKey[];
-  /**
-   * Customer-function toggles from the published storefront settings. Optional
-   * for backward-compat with the mock; consumers treat `undefined` as enabled.
-   * `allowCart:false` → browse-only / menu mode (no cart, no checkout).
-   * POS: StorefrontSettings.live.toggles
-   */
-  allowCart?: boolean;
-  allowOnlinePayment?: boolean;
-  /**
-   * Show the EN/AR language switch on the storefront header. Optional for
-   * backward-compat with the mock; `undefined` is treated as enabled.
-   * POS: StorefrontSettings.live.identity.multiLanguage
-   */
-  multiLanguage?: boolean;
-  /**
-   * Show the store name text next to the logo in the header. Optional for
-   * backward-compat; `undefined` is treated as enabled.
-   * POS: StorefrontSettings.live.identity.showNameInHeader
-   */
-  showNameInHeader?: boolean;
 }
 
-/** One color scheme — brand colors + body text. All values are CSS colors. */
-export interface ColorScheme {
+/** Brand colors for one store. All values are CSS colors (hex is fine). */
+export interface Theme {
   /** Primary brand color. Maps to CSS --saffron. */
   primary: string;
   /** Darker shade for hovers/active. Maps to CSS --saffron-deep. */
   primaryDeep: string;
-  /** Secondary accent. Maps to CSS --olive. */
-  accent: string;
-  /** Body text color. Maps to CSS --ink (applied in both light and dark). */
-  text: string;
-}
-
-/** Brand theme — a light scheme, an optional dark scheme, and a dark-mode flag. */
-export interface Theme {
-  light: ColorScheme;
-  /** When true the storefront offers a dark-mode toggle using `dark`. */
-  darkMode: boolean;
-  dark: ColorScheme;
+  /** Optional secondary accent. Maps to CSS --olive. Falls back to primary. */
+  accent?: string;
 }
 
 /** A reorderable page block on the storefront home. */
-export type SectionKey =
-  | "hero"
-  | "offers"
-  | "menu"
-  | "hours"
-  | "contact"
-  | "gallery"
-  | "cta";
-
-/* ── Customizable home sections (POS: StorefrontSettings.live.sections) ─────── */
-
-/** One hero carousel slide: a background image + overlaid content + one CTA. */
-export interface HeroSlide {
-  id: string;
-  image: string;
-  headline: string;
-  headlineAr: string;
-  subtitle: string;
-  subtitleAr: string;
-  button: { enabled: boolean; label: string; labelAr: string; url: string };
-}
-
-export interface HeroSection {
-  enabled: boolean;
-  slides: HeroSlide[];
-}
-
-/** A bilingual label + value pair (one contact/info row). */
-export interface LabeledValue {
-  label: string;
-  labelAr: string;
-  value: string;
-  valueAr: string;
-}
-
-export interface HoursDay {
-  label: string;
-  labelAr: string;
-  value: string;
-  valueAr: string;
-}
-
-export interface HoursSection {
-  enabled: boolean;
-  title: string;
-  titleAr: string;
-  note: string;
-  noteAr: string;
-  /** Optional map pin (strings; '' = no map). */
-  latitude: string;
-  longitude: string;
-  days: HoursDay[];
-}
-
-export interface ContactSection {
-  enabled: boolean;
-  title: string;
-  titleAr: string;
-  address: LabeledValue;
-  phone: { label: string; labelAr: string; value: string };
-  whatsapp: { label: string; labelAr: string; value: string };
-  note: LabeledValue;
-  directions: { label: string; labelAr: string; url: string };
-}
-
-export interface GalleryItem {
-  id: string;
-  image: string;
-  /** Optional external video link (YouTube/Vimeo/file). '' = a plain photo frame. */
-  videoUrl: string;
-  caption: string;
-  captionAr: string;
-}
-
-export interface GallerySection {
-  enabled: boolean;
-  title: string;
-  titleAr: string;
-  subtitle: string;
-  subtitleAr: string;
-  items: GalleryItem[];
-}
-
-export interface CtaButton {
-  enabled: boolean;
-  label: string;
-  labelAr: string;
-  url: string;
-}
-
-export interface CtaSection {
-  enabled: boolean;
-  heading: string;
-  headingAr: string;
-  subtitle: string;
-  subtitleAr: string;
-  primary: CtaButton;
-  secondary: CtaButton;
-}
-
-export interface FooterLink {
-  label: string;
-  labelAr: string;
-  url: string;
-}
-
-/** Fixed, always-last block (not part of `sectionOrder`). */
-export interface SiteFooter {
-  enabled: boolean;
-  about: string;
-  aboutAr: string;
-  browseTitle: string;
-  browseTitleAr: string;
-  links: FooterLink[];
-  visitTitle: string;
-  visitTitleAr: string;
-  address: string;
-  addressAr: string;
-  phones: string[];
-  social: { phone: string; whatsapp: string; instagram: string };
-  copyright: string;
-  copyrightAr: string;
-}
+export type SectionKey = "hero" | "offers" | "menu";
 
 /** A promotional / featured banner shown in the hero carousel. POS: future "Offers". */
 export interface Offer {

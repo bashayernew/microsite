@@ -7,28 +7,22 @@ import type { Category, Menu, Product } from "@/lib/api/types";
 import { pick, makeT } from "@/lib/i18n";
 import { localizeNumber } from "@/lib/format";
 import { useStore } from "@/components/store-provider";
-import { useTheme } from "@/components/store/theme-controller";
 import { Money, Badge } from "@/components/ui/ui";
 import {
   IconBag,
+  IconStar,
   IconClock,
   IconSearch,
   IconGlobe,
   IconLeaf,
   IconFlame,
   IconBack,
-  IconMoon,
-  IconSun,
 } from "@/components/ui/icons";
 import { ProductSheet } from "./product-sheet";
 import { OrderDrawer } from "./order-drawer";
 import { EntryGate } from "./entry-gate";
 import { OrdersTracker } from "./orders-tracker";
 import { OffersCarousel } from "./offers-carousel";
-import { HeroSlider } from "./hero-slider";
-import { GalleryBlock } from "./gallery-section";
-import { HoursBlock, ContactBlock, CtaBlock } from "./info-sections";
-import { SiteFooter } from "./site-footer";
 
 /** Products shown per category on the home view before "See all". */
 const SECTION_LIMIT = 4;
@@ -42,11 +36,7 @@ export function StoreView({
 }) {
   const store = useStore();
   const { locale, tenant, count, entryComplete, activeOrders, ordersOpen } = store;
-  const { dark, toggleDark, darkAvailable } = useTheme();
   const t = makeT(locale);
-  // Browse-only / menu mode: the merchant disabled the cart → no add buttons,
-  // no cart drawer, no order-type entry gate.
-  const canOrder = tenant.allowCart !== false;
 
   const [active, setActive] = useState<Product | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -118,17 +108,10 @@ export function StoreView({
     <div className="min-h-screen pb-24 sm:pb-0">
       <Header
         name={pick(tenant.businessName, tenant.businessNameAr, locale)}
-        showName={tenant.showNameInHeader !== false}
-        logo={tenant.logo}
         count={count}
         subtotal={store.subtotal}
         locale={locale}
-        canOrder={canOrder}
         ordersCount={activeOrders.length}
-        dark={dark}
-        darkAvailable={darkAvailable}
-        showLocaleSwitch={tenant.multiLanguage !== false}
-        onToggleDark={toggleDark}
         onOpenOrders={() => store.setOrdersOpen(true)}
         onToggleLocale={store.toggleLocale}
         onOpenCart={() => setDrawerOpen(true)}
@@ -138,7 +121,7 @@ export function StoreView({
         /* ── Single-category page (with sub-categories) ─────────────────── */
         <main className="mx-auto max-w-6xl px-4 py-6">
           <Link
-            href={`/${tenant.slug}`}
+            href={`/s/${tenant.slug}`}
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition hover:text-saffron"
           >
             <IconBack width={18} height={18} className="rtl:rotate-180" />
@@ -190,31 +173,13 @@ export function StoreView({
         /* ── Home ───────────────────────────────────────────────────────── */
         (() => {
           // Page blocks rendered in the merchant-controlled order (tenant.sectionOrder).
-          const heroBlock = (
-            <HeroSlider
-              key="hero"
-              slides={tenant.hero.slides}
-              locale={locale}
-              businessName={tenant.businessName}
-              businessNameAr={tenant.businessNameAr}
-              tagline={tenant.tagline}
-              taglineAr={tenant.taglineAr}
-            />
-          );
+          const heroBlock = <Hero key="hero" />;
           const offersBlock =
             tenant.offers && tenant.offers.length > 0 ? (
               <div key="offers" className="mx-auto max-w-6xl px-4 pt-4">
                 <OffersCarousel offers={tenant.offers} locale={locale} />
               </div>
             ) : null;
-          const hoursBlock = <HoursBlock key="hours" data={tenant.hours} locale={locale} />;
-          const contactBlock = (
-            <ContactBlock key="contact" data={tenant.contact} locale={locale} />
-          );
-          const galleryBlock = (
-            <GalleryBlock key="gallery" data={tenant.gallery} locale={locale} />
-          );
-          const ctaBlock = <CtaBlock key="cta" data={tenant.cta} locale={locale} />;
           const menuBlock = (
             <div key="menu">
           <div className="sticky top-[61px] z-30 border-b border-line bg-paper/85 backdrop-blur">
@@ -262,7 +227,7 @@ export function StoreView({
                 if (!items.length) return null;
                 const shown = items.slice(0, SECTION_LIMIT);
                 const more = items.length - shown.length;
-                const href = `/${tenant.slug}/c/${cat.slug}`;
+                const href = `/s/${tenant.slug}/c/${cat.slug}`;
                 return (
                   <Section
                     key={cat.id}
@@ -306,10 +271,6 @@ export function StoreView({
                 if (key === "hero") return heroBlock;
                 if (key === "offers") return offersBlock;
                 if (key === "menu") return menuBlock;
-                if (key === "hours") return hoursBlock;
-                if (key === "contact") return contactBlock;
-                if (key === "gallery") return galleryBlock;
-                if (key === "cta") return ctaBlock;
                 return null;
               })}
             </>
@@ -317,23 +278,14 @@ export function StoreView({
         })()
       )}
 
-      {tenant.footer.enabled ? (
-        <SiteFooter
-          data={tenant.footer}
-          locale={locale}
-          businessName={tenant.businessName}
-          businessNameAr={tenant.businessNameAr}
-        />
-      ) : (
-        <footer className="border-t border-line py-8 text-center">
-          <p className="text-xs text-ink-faint">
-            {t("powered_by")} · {pick(tenant.businessName, tenant.businessNameAr, locale)}
-          </p>
-        </footer>
-      )}
+      <footer className="border-t border-line py-8 text-center">
+        <p className="text-xs text-ink-faint">
+          {t("powered_by")} · {pick(tenant.businessName, tenant.businessNameAr, locale)}
+        </p>
+      </footer>
 
       {/* Mobile order bar */}
-      {canOrder && count > 0 && !drawerOpen && (
+      {count > 0 && !drawerOpen && (
         <button
           onClick={() => setDrawerOpen(true)}
           className="fixed inset-x-4 bottom-4 z-30 flex items-center justify-between rounded-xl bg-saffron px-5 py-3.5 text-paper shadow-lg animate-float-up sm:hidden"
@@ -352,9 +304,8 @@ export function StoreView({
       <OrderDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <OrdersTracker open={ordersOpen} onClose={() => store.setOrdersOpen(false)} />
 
-      {/* Opening "How would you like it?" gate, shown before the menu.
-          Skipped entirely in browse-only mode (no ordering). */}
-      {canOrder && !focusCategory && !entryComplete && <EntryGate />}
+      {/* Opening "How would you like it?" gate, shown before the menu. */}
+      {!focusCategory && !entryComplete && <EntryGate />}
     </div>
   );
 }
@@ -363,33 +314,19 @@ export function StoreView({
 
 function Header({
   name,
-  showName,
-  logo,
   count,
   subtotal,
   locale,
-  canOrder,
   ordersCount,
-  dark,
-  darkAvailable,
-  showLocaleSwitch,
-  onToggleDark,
   onOpenOrders,
   onToggleLocale,
   onOpenCart,
 }: {
   name: string;
-  showName: boolean;
-  logo: string | null;
   count: number;
   subtotal: string;
   locale: "en" | "ar";
-  canOrder: boolean;
   ordersCount: number;
-  dark: boolean;
-  darkAvailable: boolean;
-  showLocaleSwitch: boolean;
-  onToggleDark: () => void;
   onOpenOrders: () => void;
   onToggleLocale: () => void;
   onOpenCart: () => void;
@@ -398,21 +335,10 @@ function Header({
     <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="flex items-center gap-2.5">
-          {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logo}
-              alt={name}
-              className="h-9 w-9 rounded-xl object-contain"
-            />
-          ) : (
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-saffron font-display text-base text-paper">
-              {name.charAt(0)}
-            </span>
-          )}
-          {showName && (
-            <span className="font-display text-lg text-ink">{name}</span>
-          )}
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-saffron font-display text-base text-paper">
+            {name.charAt(0)}
+          </span>
+          <span className="font-display text-lg text-ink">{name}</span>
         </Link>
         <div className="flex items-center gap-2">
           {ordersCount > 0 && (
@@ -424,42 +350,86 @@ function Header({
               {pick("Orders", "الطلبات", locale)} · {localizeNumber(ordersCount, locale)}
             </button>
           )}
-          {darkAvailable && (
-            <button
-              onClick={onToggleDark}
-              aria-label={dark ? "Light mode" : "Dark mode"}
-              className="inline-flex items-center justify-center rounded-lg border border-line bg-paper-raised p-2 text-ink-soft transition hover:border-saffron hover:text-saffron"
-            >
-              {dark ? <IconSun width={16} height={16} /> : <IconMoon width={16} height={16} />}
-            </button>
-          )}
-          {showLocaleSwitch && (
-            <button
-              onClick={onToggleLocale}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper-raised px-3 py-2 text-xs font-semibold text-ink-soft transition hover:border-saffron hover:text-saffron"
-            >
-              <IconGlobe width={16} height={16} />
-              {locale === "en" ? "العربية" : "EN"}
-            </button>
-          )}
-          {canOrder && (
-            <button
-              onClick={onOpenCart}
-              aria-label="Cart"
-              className="relative inline-flex items-center gap-2 rounded-lg bg-saffron px-3.5 py-2 text-sm font-semibold text-paper shadow-sm transition hover:bg-saffron-deep"
-            >
-              <IconBag width={18} height={18} />
-              <Money amount={subtotal} locale={locale} className="hidden sm:inline" showCurrency={false} />
-              {count > 0 && (
-                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white/25 px-1 text-[11px] font-bold">
-                  {localizeNumber(count, locale)}
-                </span>
-              )}
-            </button>
-          )}
+          <button
+            onClick={onToggleLocale}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper-raised px-3 py-2 text-xs font-semibold text-ink-soft transition hover:border-saffron hover:text-saffron"
+          >
+            <IconGlobe width={16} height={16} />
+            {locale === "en" ? "العربية" : "EN"}
+          </button>
+          <button
+            onClick={onOpenCart}
+            aria-label="Cart"
+            className="relative inline-flex items-center gap-2 rounded-lg bg-saffron px-3.5 py-2 text-sm font-semibold text-paper shadow-sm transition hover:bg-saffron-deep"
+          >
+            <IconBag width={18} height={18} />
+            <Money amount={subtotal} locale={locale} className="hidden sm:inline" showCurrency={false} />
+            {count > 0 && (
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white/25 px-1 text-[11px] font-bold">
+                {localizeNumber(count, locale)}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </header>
+  );
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+
+function Hero() {
+  const { tenant, locale } = useStore();
+  const t = makeT(locale);
+  return (
+    <section className="mx-auto max-w-6xl px-4 pt-6">
+      <div className="overflow-hidden rounded-2xl border border-line bg-paper-raised shadow-sm">
+        <div className="grid items-stretch md:grid-cols-2">
+          <div className="order-2 p-6 sm:p-9 md:order-1">
+            <span className="inline-flex items-center gap-2 rounded-full bg-olive-tint px-3 py-1 text-xs font-semibold text-olive">
+              {tenant.isOpenNow ? (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-ok" /> {t("open_now")}
+                </>
+              ) : (
+                t("closed")
+              )}
+            </span>
+            <h1 className="mt-3 font-display text-3xl text-ink sm:text-4xl">
+              {pick(tenant.businessName, tenant.businessNameAr, locale)}
+            </h1>
+            <p className="mt-2 max-w-md text-[15px] leading-relaxed text-ink-soft">
+              {pick(tenant.tagline, tenant.taglineAr, locale)}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Badge tone="gold">
+                <IconStar width={12} height={12} /> {tenant.rating.toFixed(1)} ·{" "}
+                {localizeNumber(tenant.ratingCount, locale)} {t("reviews")}
+              </Badge>
+              <Badge>
+                <IconClock width={12} height={12} />{" "}
+                {pick(tenant.hours, tenant.hoursAr, locale)}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="relative order-1 min-h-[180px] md:order-2 md:min-h-[260px]">
+            <Image
+              src={tenant.coverImage}
+              alt={pick(tenant.businessName, tenant.businessNameAr, locale)}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 600px"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 hidden bg-gradient-to-r from-paper-raised via-paper-raised/10 to-transparent md:block" />
+          </div>
+        </div>
+      </div>
+      {tenant.offers && tenant.offers.length > 0 && (
+        <OffersCarousel offers={tenant.offers} locale={locale} />
+      )}
+    </section>
   );
 }
 
@@ -573,8 +543,6 @@ function ProductCard({
   onOpen: (p: Product) => void;
   t: ReturnType<typeof makeT>;
 }) {
-  const { tenant } = useStore();
-  const canOrder = tenant.allowCart !== false;
   const img = product.images.find((i) => i.isPrimary)?.url ?? product.images[0]?.url ?? null;
   const configurable = product.hasVariants || product.modifierGroups.length > 0;
   return (
@@ -622,16 +590,14 @@ function ProductCard({
             <Money amount={product.basePrice} locale={locale} showCurrency={false} />
             <span className="text-xs font-medium text-ink-faint"> {locale === "ar" ? "د.ك" : "KWD"}</span>
           </p>
-          {canOrder && (
-            <button
-              onClick={() => onAdd(product)}
-              aria-label={t("add")}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-saffron-tint px-3 py-2 text-sm font-semibold text-saffron transition hover:bg-saffron hover:text-paper"
-            >
-              <IconBag width={16} height={16} />
-              {t("add")}
-            </button>
-          )}
+          <button
+            onClick={() => onAdd(product)}
+            aria-label={t("add")}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-saffron-tint px-3 py-2 text-sm font-semibold text-saffron transition hover:bg-saffron hover:text-paper"
+          >
+            <IconBag width={16} height={16} />
+            {t("add")}
+          </button>
         </div>
       </div>
     </div>

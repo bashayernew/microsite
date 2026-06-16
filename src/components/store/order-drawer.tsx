@@ -67,11 +67,11 @@ export function OrderDrawer({ open, onClose }: { open: boolean; onClose: () => v
 
   useEffect(() => {
     let alive = true;
-    if (isDineIn) getTables(tenant.slug, store.branch.id).then((a) => alive && setAreas(a));
+    if (isDineIn) getTables(store.branch.id).then((a) => alive && setAreas(a));
     return () => {
       alive = false;
     };
-  }, [isDineIn, tenant.slug, store.branch.id]);
+  }, [isDineIn, store.branch.id]);
 
   useEffect(() => {
     let alive = true;

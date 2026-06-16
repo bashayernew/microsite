@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { getMenu, getTenant } from "@/lib/api/client";
 import { StoreProvider } from "@/components/store-provider";
-import { NuwwarStoreView } from "@/components/store/nuwwar/nuwwar-store-view";
-import { ThemeController } from "@/components/store/theme-controller";
-import { isReservedSegment } from "@/lib/reserved-paths";
+import { StoreView } from "@/components/store/store-view";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ tenant: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { tenant: slug } = await params;
   const tenant = await getTenant(slug);
   if (!tenant) return { title: "Not found" };
   const title = `${tenant.businessName} — Order online`;
@@ -28,22 +27,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function StorePage({ params }: PageProps) {
-  const { slug } = await params;
-  // Defense-in-depth: a reserved first segment must never resolve as a tenant slug
-  // (middleware also blocks these, this guards direct/SSR hits).
-  if (isReservedSegment(slug)) notFound();
-
+  const { tenant: slug } = await params;
   const [tenant, menu] = await Promise.all([getTenant(slug), getMenu(slug)]);
   if (!tenant) notFound();
 
-  // Per-store theming: ThemeController injects the merchant's light/dark color
-  // schemes as CSS variables and owns the light/dark toggle, so every component
-  // below recolors from this store's `theme` object.
+  // Per-store theming: override the global CSS color variables on a wrapper so
+  // every component below recolors from this store's `theme` object. The merchant
+  // sets these colors in the POS microsite-settings page.
+  const themeVars = {
+    "--saffron": tenant.theme.primary,
+    "--saffron-deep": tenant.theme.primaryDeep,
+    "--olive": tenant.theme.accent ?? tenant.theme.primary,
+  } as CSSProperties;
+
   return (
-    <ThemeController theme={tenant.theme}>
+    <div style={themeVars}>
       <StoreProvider tenant={tenant}>
-        <NuwwarStoreView menu={menu} />
+        <StoreView menu={menu} />
       </StoreProvider>
-    </ThemeController>
+    </div>
   );
 }
